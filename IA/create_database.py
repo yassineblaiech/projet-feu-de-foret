@@ -11,8 +11,13 @@ import datetime
 def generate_spectr(file, show=False):
     # Load the WAV file
     sample_rate, audio_data = wav.read(file)
-
-    # Set the number of FFT points for spectrogram calculation
+    
+    # Check if the audio data is multi-channel and mix down to mono if necessary
+    if len(audio_data.shape) > 1:
+        # Assume audio_data is in shape [samples, channels], mix down to mono
+        audio_data = np.mean(audio_data, axis=1)
+    
+    # Continue as before
     nperseg = min(256, len(audio_data))  # Choose a smaller value if input signal is shorter than 256
 
     # Compute the spectrogram
@@ -36,7 +41,6 @@ def generate_spectr(file, show=False):
 
     return frequencies, times, spectrogram_cut
 
-
 def write_spectr(spectr_data_rep, frequencies, times, spectrogram):
     filename = os.path.join(spectr_data_rep, f"spectrogram_data_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt")
 
@@ -53,4 +57,4 @@ def write_spectr(spectr_data_rep, frequencies, times, spectrogram):
 
 if __name__ == '__main__':
     frequencies, times, spectrogram = generate_spectr('sound1.wav')
-    #write_spectr('..\\spectr_data',frequencies, times, spectrogram)
+    write_spectr('..\\spectr_data',frequencies, times, spectrogram)
