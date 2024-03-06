@@ -5,15 +5,18 @@ import numpy as np
 import scipy.io.wavfile as wav
 import scipy.signal as signal
 import matplotlib.pyplot as plt
+import os
+import datetime
 
-def generate_spectr(file, show=True):
+def generate_spectr(file, show=False):
     # Load the WAV file
     sample_rate, audio_data = wav.read(file)
 
     # Set the number of FFT points for spectrogram calculation
+    nperseg = min(256, len(audio_data))  # Choose a smaller value if input signal is shorter than 256
 
     # Compute the spectrogram
-    frequencies, times, spectrogram = signal.spectrogram(audio_data, sample_rate)
+    frequencies, times, spectrogram = signal.spectrogram(audio_data, sample_rate, nperseg=nperseg)
     min_freq = 0
     max_freq = 20000
 
@@ -22,30 +25,32 @@ def generate_spectr(file, show=True):
 
     spectrogram_cut = spectrogram[freq_indices, :]
 
-    # Normalize the spectrogram by its mean along the time axis
-    normalized_spectrogram = spectrogram_cut / np.mean(spectrogram_cut, axis=1, keepdims=True)
-
     if show:
         # Display the normalized spectrogram
-        plt.imshow(np.log1p(normalized_spectrogram), aspect='auto', extent=[times.min(), times.max(), min_freq, max_freq])
+        plt.imshow(np.log1p(spectrogram_cut), aspect='auto', extent=[times.min(), times.max(), min_freq, max_freq])
         plt.colorbar(label='Log Normalized Spectrogram Amplitude')
         plt.ylabel('Frequency [Hz]')
         plt.xlabel('Time [sec]')
         plt.title('Normalized Spectrogram')
         plt.show()
 
-    # Sum the normalized spectrogram along the frequencies axis
-    magnitude_per_time = np.sum(spectrogram, axis=0)
-    magnitude_normalized = magnitude_per_time / np.mean(magnitude_per_time)
+    return frequencies, times, spectrogram_cut
 
-    if show:
-        plt.plot(times, magnitude_normalized)
-        plt.xlabel('Time [sec]')
-        plt.show()
 
-    peak_value = max(magnitude_normalized)
-    return peak_value
-    if peak_value > 10:
-        return 1
-    else:
-        return 0
+def write_spectr(spectr_data_rep, frequencies, times, spectrogram):
+    filename = os.path.join(spectr_data_rep, f"spectrogram_data_{datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')}.txt")
+
+    # Write data to the file
+    with open(filename, 'w') as file:
+        file.write(np.array2string(frequencies, separator=',') + "\n\n")
+        file.write(np.array2string(times, separator=',') + "\n\n")
+        for i in range(len(spectrogram)):
+            file.write(np.array2string(spectrogram[i], separator=',') + "\n")
+            
+        #file.write(np.array2string(spectrogram[2], separator=',') + "\n")
+    print(f"File '{filename}' generated successfully.")
+
+
+if __name__ == '__main__':
+    frequencies, times, spectrogram = generate_spectr('sound1.wav')
+    #write_spectr('..\\spectr_data',frequencies, times, spectrogram)
