@@ -24,23 +24,27 @@ def load_data(csv_file):
 
 # Define a more complex model that can take multiple inputs
 def create_multi_input_model(spectrogram_shape, time_data_shape, frequency_data_shape):
-    # Spectrogram input (2D data)
+    # Define input layers
     spectrogram_input = Input(shape=spectrogram_shape, name='spectrogram_input')
-    # Assuming spectrogram input is a 2D image, this branch processes it
+    time_input = Input(shape=(time_data_shape,), name='time_input')
+    frequency_input = Input(shape=(frequency_data_shape,), name='frequency_input')
+
+    # Spectrogram processing branch
     x = Conv2D(32, (3, 3), activation='relu')(spectrogram_input)
     x = MaxPooling2D((2, 2))(x)
     x = Flatten()(x)
-    
-    # Additional inputs for time and frequency data (1D data)
-    time_input = Input(shape=(time_data_shape,), name='time_input')
-    frequency_input = Input(shape=(frequency_data_shape,), name='frequency_input')
-    # You might process these inputs differently, e.g., with Dense layers
-    y = concatenate([x, time_input, frequency_input])
-    y = Dense(64, activation='relu')(y)
+
+    # Combining processed spectrogram with time and frequency data
+    combined_inputs = concatenate([x, time_input, frequency_input])
+
+    # Fully connected layers
+    y = Dense(64, activation='relu')(combined_inputs)
     output = Dense(2, activation='softmax')(y)
     
+    # Creating and compiling the model
     model = Model(inputs=[spectrogram_input, time_input, frequency_input], outputs=output)
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+
     return model
 
 # Updated training function to handle multiple inputs
@@ -54,7 +58,9 @@ def train_and_evaluate(csv_file):
     
     # Split the data
     # You'll need to ensure this split applies correctly across all your inputs and labels
-    X_train, X_test, y_train, y_test = train_test_split(spectrogram_data, labels, test_size=0.2, random_state=42)
+    X_train_spectrogram, X_test_spectrogram, y_train, y_test = train_test_split(spectrogram_data, labels, test_size=0.2, random_state=42)
+    X_train_time, X_test_time, y_train, y_test = train_test_split(time_data, labels, test_size=0.2, random_state=42)
+    X_train_frequency, X_test_frequency, y_train, y_test = train_test_split(frequency_data, labels, test_size=0.2, random_state=42)
     # Similarly split time_data, frequency_data
     
     model = create_multi_input_model(spectrogram_data[0].shape, len(time_data[0]), len(frequency_data[0]))
