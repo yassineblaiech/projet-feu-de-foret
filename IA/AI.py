@@ -12,11 +12,11 @@ def load_data(csv_file):
     df = pd.read_csv(csv_file)
     # Example of how you might split your data into these components
     # This will need to be adjusted based on the actual structure of your CSV
-    time_data = df['time'].apply(lambda x: np.array(x[1:-2].split(','), dtype=float)).tolist()
-    frequency_data = df['frequency'].apply(lambda x: np.array(x[1:-2].split(','), dtype=float)).tolist()
-    spectrogram_data = df.drop(['time', 'frequency', 'label'], axis=1).values
+    time_data = df['time']
+    frequency_data = df['frequency']
+    spectrogram_data = df.drop(['time', 'frequency', 'label']).values
     labels = df['label'].values
-    
+    print(spectrogram_data)
     # Reshape spectrogram_data if necessary
     # Example reshape, adjust based on your data
     spectrogram_data=np.array(list(spectrogram_data))
@@ -76,4 +76,4 @@ def train_and_evaluate(csv_file):
 if __name__=='__main__':
     sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
     time_data, frequency_data, spectrogram_data, labels=load_data('spectrogram_data.csv')
-    print(time_data, frequency_data, spectrogram_data, labels)
+    
