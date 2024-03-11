@@ -4,20 +4,22 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, Dropout, MaxPooling2D, concatenate
 from tensorflow.keras.utils import to_categorical
+import sys
 
 # Load data, assuming CSV has 'time', 'frequency', 'spectrogram_data', 'label'
 def load_data(csv_file):
+    sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
     df = pd.read_csv(csv_file)
-    
     # Example of how you might split your data into these components
     # This will need to be adjusted based on the actual structure of your CSV
-    time_data = df['time'].apply(lambda x: np.array(x.split(','), dtype=float)).tolist()
-    frequency_data = df['frequency'].apply(lambda x: np.array(x.split(','), dtype=float)).tolist()
+    time_data = df['time'].apply(lambda x: np.array(x[1:-2].split(','), dtype=float)).tolist()
+    frequency_data = df['frequency'].apply(lambda x: np.array(x[1:-2].split(','), dtype=float)).tolist()
     spectrogram_data = df.drop(['time', 'frequency', 'label'], axis=1).values
     labels = df['label'].values
     
     # Reshape spectrogram_data if necessary
     # Example reshape, adjust based on your data
+    spectrogram_data=np.array(list(spectrogram_data))
     spectrogram_data = spectrogram_data.reshape(spectrogram_data.shape[0], len(frequency_data), len(time_data), 1)  # le shape c len(freq)*len(time)???
     
     return time_data, frequency_data, spectrogram_data, labels
@@ -71,3 +73,7 @@ def train_and_evaluate(csv_file):
     score = model.evaluate([X_test_spectrogram, X_test_time, X_test_frequency], y_test, verbose=0)
     print('Test loss:', score[0])
     print('Test accuracy:', score[1])
+if __name__=='__main__':
+    sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
+    time_data, frequency_data, spectrogram_data, labels=load_data('spectrogram_data.csv')
+    print(time_data, frequency_data, spectrogram_data, labels)
