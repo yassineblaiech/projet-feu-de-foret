@@ -20,6 +20,9 @@ def generate_spectr(sound_data_rep,file, show=False):
 
     # Compute the spectrogram
     frequencies, times, spectrogram = signal.spectrogram(audio_data, sample_rate, nperseg=nperseg)
+    frequencies=np.array([round(num, 2) for num in frequencies])
+    times=[round(num,2) for num in times]
+    spectrogram=np.array([[round(num,2) for num in row] for row in spectrogram])
     min_freq = 0
     max_freq = 20000
     freq_indices = np.where((frequencies >= min_freq) & (frequencies <= max_freq))[0]
@@ -35,29 +38,24 @@ def generate_spectr(sound_data_rep,file, show=False):
         plt.show()
 
     return frequencies, times, spectrogram_cut
+
 def write_head_csv(spectr_data_rep):
     sys.path.insert(0, spectr_data_rep)
     filename = os.path.join(spectr_data_rep, f"spectrogram_data.csv")
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        # Write the header
-        writer.writerow(['frequency', 'time', 'spectrogram','label'])
+    with open(filename, mode='w', newline='') as file:
+        file.write('frequency,time,spectrogram,label\n')
 
 def write_spectr_csv(spectr_data_rep, frequencies, times, spectrogram):
     sys.path.insert(0, spectr_data_rep)
     filename = os.path.join(spectr_data_rep, f"spectrogram_data.csv")
-    spectrogram_list = spectrogram
-    with open(filename, mode='a', newline='') as file:
-        writer = csv.writer(file)
-        # Write the data
-        writer.writerow([
-            frequencies.tolist(),  # Convert the numpy array to list and then to string
-            times.tolist(),  # Convert the numpy array to list and then to string
-            str(spectrogram_list),
-            1,
-            '\n'# The spectrogram is already a list of lists
-        ])
-
+    with open(filename, mode='a') as file:
+        # Convert the arrays to comma-separated strings
+        frequencies_str = ','.join(map(str, frequencies))
+        times_str = ','.join(map(str, times))
+        spectrogram_str = ','.join(','.join(map(str, row)) for row in spectrogram)
+        
+        # Write the strings to the file directly, avoiding CSV writer to prevent quotes
+        file.write(f"{frequencies_str};{times_str};{spectrogram_str};1\n")
     print(f"CSV file '{filename}' generated successfully.")
 
 def create_database(sound_data_rep, spectr_data_rep):

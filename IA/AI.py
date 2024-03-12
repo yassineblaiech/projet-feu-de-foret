@@ -8,28 +8,32 @@ import sys
 
 # Load data, assuming CSV has 'time', 'frequency', 'spectrogram_data', 'label'
 def load_data(csv_file):
-    sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
-    df = pd.read_csv(csv_file)
-    # Example of how you might split your data into these components
-    # This will need to be adjusted based on the actual structure of your CSV
-    time_data = df['time']
-    frequency_data = df['frequency']
-    spectrogram_data = df.drop(['time', 'frequency', 'label']).values
-    labels = df['label'].values
-    print(spectrogram_data)
-    # Reshape spectrogram_data if necessary
-    # Example reshape, adjust based on your data
-    spectrogram_data=np.array(list(spectrogram_data))
-    spectrogram_data = spectrogram_data.reshape(spectrogram_data.shape[0], len(frequency_data), len(time_data), 1)  # le shape c len(freq)*len(time)???
-    
+    with open(csv_file, mode='r', newline='') as file:
+        lines=file.readlines()[1:]
+        spectrogram_data=[]
+        frequency_data=[]
+        time_data=[]
+        labels=[]
+        for line in lines:
+            data=line.split(';')
+            frequency_data.append([float(el) for el in data[0].split(',')[:117]])
+            time_data.append([float(el) for el in data[1].split(',')])
+            spectrogram_data.append(np.array([float(el) for el in data[2].split(',')]).reshape(117,980))
+            labels.append(data[3])
+        spectrogram_data=np.array(spectrogram_data)
+        time_data=np.array(time_data)
+        frequency_data=np.array(frequency_data)
+        labels=np.array(labels)
+        
+        
     return time_data, frequency_data, spectrogram_data, labels
 
 # Define a more complex model that can take multiple inputs
 def create_multi_input_model(spectrogram_shape, time_data_shape, frequency_data_shape):
     # Define input layers
-    spectrogram_input = Input(shape=spectrogram_shape, name='spectrogram_input')
-    time_input = Input(shape=(time_data_shape,), name='time_input')
-    frequency_input = Input(shape=(frequency_data_shape,), name='frequency_input')
+    spectrogram_input = Input(shape=(spectrogram_shape[0],spectrogram_shape[1],1), name='spectrogram_input')
+    time_input = Input(shape=(time_data_shape[1],), name='time_input')
+    frequency_input = Input(shape=(frequency_data_shape[1],), name='frequency_input')
 
     # Spectrogram processing branch
     x = Conv2D(32, (3, 3), activation='relu')(spectrogram_input)
@@ -65,7 +69,7 @@ def train_and_evaluate(csv_file):
     X_train_frequency, X_test_frequency, y_train, y_test = train_test_split(frequency_data, labels, test_size=0.2, random_state=42)
     # Similarly split time_data, frequency_data
     
-    model = create_multi_input_model(spectrogram_data[0].shape, len(time_data[0]), len(frequency_data[0]))
+    model = create_multi_input_model(spectrogram_data[0].shape,( 1,len(time_data[0])), (1,len(frequency_data[0])))
     # When fitting, provide a list of inputs corresponding to the model's inputs
     model.fit([X_train_spectrogram, X_train_time, X_train_frequency], y_train, batch_size=64, epochs=10, validation_split=0.2)
     
@@ -76,4 +80,6 @@ def train_and_evaluate(csv_file):
 if __name__=='__main__':
     sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
     time_data, frequency_data, spectrogram_data, labels=load_data('spectrogram_data.csv')
-    
+    spectrogram_shape, time_data_shape, frequency_data_shape=spectrogram_data.shape,time_data.shape,frequency_data.shape
+    create_multi_input_model(spectrogram_shape, time_data_shape, frequency_data_shape)
+    train_and_evaluate('spectrogram_data.csv')
