@@ -65,9 +65,9 @@ def create_database(sound_data_rep, spectr_data_rep):
     for file in files :
         print('Analyzing ' + file + '...')
         frequencies, times, spectrogram = generate_spectr(sound_data_rep,sound_data_rep+file)
-        if len(times)>9800:
+        if len(times)>980:
             print(file + ' eligible, spliting data...')
-            for i in range(10): 
+            for i in range(len(times)//980): 
                 write_spectr_csv(spectr_data_rep,frequencies, times[i*980:(i+1)*980], [[spectrogram[i][j] for i in range(len(spectrogram))] for j in range(i*980, (i+1)*980)])
         else :
             print(file + ' not eligible, skipping it')
@@ -81,6 +81,6 @@ def create_database(sound_data_rep, spectr_data_rep):
 
 
 if __name__ == '__main__':
-    sound_data_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/'
-    spectr_data_rep='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data'
+    sound_data_repo='IA\\sound_data\\'
+    spectr_data_rep='IA\\spectr_data\\'
     create_database(sound_data_repo, spectr_data_rep)
