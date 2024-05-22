@@ -6,69 +6,71 @@ import matplotlib.pyplot as plt
 import os
 import datetime
 import sys
+from other_features import extract_audio_features
+from other_features import feature_names
 
-def generate_spectr(sound_data_rep,file, show=False):
-    # Load the WAV file
-    sys.path.insert(0, sound_data_rep)
-    sample_rate, audio_data = wav.read(file)
-    
-    # Check if audio data is multi-channel and mix down to mono if necessary
-    if len(audio_data.shape) > 1:
-        audio_data = np.mean(audio_data, axis=1)
-    
-    nperseg = min(256, len(audio_data))
-
-    # Compute the spectrogram
-    frequencies, times, spectrogram = signal.spectrogram(audio_data, sample_rate, nperseg=nperseg)
-    frequencies=np.array([round(num, 2) for num in frequencies])
-    times=[round(num,2) for num in times]
-    spectrogram=np.array([[round(num,2) for num in row] for row in spectrogram])
-    min_freq = 0
-    max_freq = 20000
-    freq_indices = np.where((frequencies >= min_freq) & (frequencies <= max_freq))[0]
-
-    spectrogram_cut = spectrogram[freq_indices, :]
-
-    if show:
-        plt.imshow(np.log1p(spectrogram_cut), aspect='auto', extent=[times.min(), times.max(), min_freq, max_freq])
-        plt.colorbar(label='Log Normalized Spectrogram Amplitude')
-        plt.ylabel('Frequency [Hz]')
-        plt.xlabel('Time [sec]')
-        plt.title('Normalized Spectrogram')
-        plt.show()
-
-    return frequencies, times, spectrogram_cut
 
 def write_head_csv(spectr_data_rep):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"spectrogram_data.csv")
+    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
     with open(filename, mode='w', newline='') as file:
-        file.write('frequency,time,spectrogram,label\n')
+        feature_names_list= feature_names()
+        for feature in feature_names_list:
+            file.write("{},".format(feature))
+        file.write('labels\n')
 
-def write_spectr_csv(spectr_data_rep, frequencies, times, spectrogram):
+def write_spectr_fire_csv(spectr_data_rep, features,i):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"spectrogram_data.csv")
+    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
+    str_features={}
     with open(filename, mode='a') as file:
         # Convert the arrays to comma-separated strings
-        frequencies_str = ','.join(map(str, frequencies))
-        times_str = ','.join(map(str, times))
-        spectrogram_str = ','.join(','.join(map(str, row)) for row in spectrogram)
+        for key in features.keys():
+            if key in ['spectrogram', 'spectral_contrast_input','mfccs_input']:
+                str_features[key] =','.join(','.join(map(str, row)) for row in [[round(features[key][i][j],2) for i in range(len(features[key]))] for j in range(i*400, (i+1)*400)])
+            elif key in ['tempo_input']:
+                str_features[key] =str(features[key])
+            else:
+                str_features[key] =','.join(map(str, list(round(el,2) for el in features[key][0][i*400:(i+1)*400])))
         
         # Write the strings to the file directly, avoiding CSV writer to prevent quotes
-        file.write(f"{frequencies_str};{times_str};{spectrogram_str};1\n")
-    print(f"CSV file '{filename}' generated successfully.")
-
-def create_database(sound_data_rep, spectr_data_rep):
+        for key in features.keys():
+            file.write(f"{str_features[key]};")
+        file.write("1\n")
+    print(f"CSV file '{filename}' part {i} generated successfully.")
+    
+def write_spectr_not_fire_csv(spectr_data_rep, features,i):
+    sys.path.insert(0, spectr_data_rep)
+    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
+    str_features={}
+    with open(filename, mode='a') as file:
+        # Convert the arrays to comma-separated strings
+        for key in features.keys():
+            if key in ['spectrogram', 'spectral_contrast_input','mfccs_input']:
+                str_features[key] =','.join(','.join(map(str, row)) for row in [[round(features[key][i][j],2) for i in range(len(features[key]))] for j in range(i*400, (i+1)*400)])
+            elif key in ['tempo_input']:
+                str_features[key] =str(features[key])
+            else:
+                str_features[key] =','.join(map(str, list(round(el,2) for el in features[key][0][i*400:(i+1)*400])))
+        
+        # Write the strings to the file directly, avoiding CSV writer to prevent quotes
+        for key in features.keys():
+            file.write(f"{str_features[key]};")
+        file.write("0\n")
+    print(f"CSV file '{filename}' part {i} generated successfully.")
+    
+def create_database_fire(sound_data_fire_rep, spectr_data_rep):
     write_head_csv(spectr_data_rep)
-    files = os.listdir(sound_data_rep)
+    files = os.listdir(sound_data_fire_rep)
     files_not_analized = []
     for file in files :
         print('Analyzing ' + file + '...')
-        frequencies, times, spectrogram = generate_spectr(sound_data_rep,sound_data_rep+file)
-        if len(times)>980:
+        features = extract_audio_features(sound_data_fire_rep+file)
+        times=features['spectrogram'].shape[1]
+        if times>400:
             print(file + ' eligible, spliting data...')
-            for i in range(len(times)//980): 
-                write_spectr_csv(spectr_data_rep,frequencies, times[i*980:(i+1)*980], [[spectrogram[i][j] for i in range(len(spectrogram))] for j in range(i*980, (i+1)*980)])
+            for i in range(times//400): 
+                write_spectr_fire_csv(spectr_data_rep,features,i)
         else :
             print(file + ' not eligible, skipping it')
             files_not_analized.append(file)
@@ -78,9 +80,38 @@ def create_database(sound_data_rep, spectr_data_rep):
         print(files_not_analized)
     else :
         print('All files analyzed successefully')
+        
+def create_database_not_fire(sound_data_not_fire_rep, spectr_data_rep):
+
+    files = os.listdir(sound_data_not_fire_rep)
+    files_not_analized = []
+    for file in files :
+        print('Analyzing ' + file + '...')
+        features = extract_audio_features(sound_data_not_fire_rep+file)
+        times=features['spectrogram'].shape[1]
+        if times>400:
+            print(file + ' eligible, spliting data with times={}...'.format(times))
+            for i in range(times//400):
+                write_spectr_not_fire_csv(spectr_data_rep,features,i)
+        else :
+            print(file + 'skipping with times={}...'.format(times))
+            files_not_analized.append(file)
+    
+    if len(files_not_analized)!=0:
+        print('Files not analyzed :')
+        print(files_not_analized)
+    else :
+        print('All files analyzed successefully')
+
 
 
 if __name__ == '__main__':
-    sound_data_repo='IA\\sound_data\\'
-    spectr_data_rep='IA\\spectr_data\\'
-    create_database(sound_data_repo, spectr_data_rep)
+    answer=input('do you want to reload data?')
+    if answer=='yes':
+        sound_data_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire/'
+        sound_data_not_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire/'
+        spectr_data_rep='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data'
+        create_database_fire(sound_data_fire_repo,spectr_data_rep)
+        create_database_not_fire(sound_data_not_fire_repo, spectr_data_rep)
+    else:
+        print('generation not authorised')
