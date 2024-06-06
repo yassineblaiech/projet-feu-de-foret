@@ -7,7 +7,7 @@ import os
 import datetime
 import sys
 
-def generate_spectr(sound_data_rep,file, show=True):
+def generate_spectr(sound_data_rep,file, show=False):
     # Load the WAV file
     sys.path.insert(0, sound_data_rep)
     sample_rate, audio_data = wav.read(file)
@@ -41,13 +41,13 @@ def generate_spectr(sound_data_rep,file, show=True):
 
 def write_head_csv(spectr_data_rep):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"spectrogram_data_test.csv")
+    filename = os.path.join(spectr_data_rep, f"spectrogram_data_old_version.csv")
     with open(filename, mode='w', newline='') as file:
         file.write('frequency,time,spectrogram,label\n')
 
 def write_spectr_fire_csv(spectr_data_rep, frequencies, times, spectrogram):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"spectrogram_data_test.csv")
+    filename = os.path.join(spectr_data_rep, f"spectrogram_data_old_version.csv")
     with open(filename, mode='a') as file:
         # Convert the arrays to comma-separated strings
         frequencies_str = ','.join(map(str, frequencies))
@@ -60,7 +60,7 @@ def write_spectr_fire_csv(spectr_data_rep, frequencies, times, spectrogram):
     
 def write_spectr_not_fire_csv(spectr_data_rep, frequencies, times, spectrogram):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"spectrogram_data_test.csv")
+    filename = os.path.join(spectr_data_rep, f"spectrogram_data_old_version.csv")
     with open(filename, mode='a') as file:
         # Convert the arrays to comma-separated strings
         frequencies_str = ','.join(map(str, frequencies))
@@ -116,7 +116,7 @@ def create_database_not_fire(sound_data_not_fire_rep, spectr_data_rep):
 
 
 if __name__ == '__main__':
-    answer=input('do ypu want to reload data?')
+    answer=input('do you want to reload data?')
     if answer=='yes':
         sound_data_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/fire_test/'
         sound_data_not_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/not_fire_test/'

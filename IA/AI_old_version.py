@@ -4,7 +4,11 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Model
 from tensorflow.keras.layers import Input, Dense, Conv2D, Flatten, Dropout, MaxPooling2D, concatenate
 from tensorflow.keras.utils import to_categorical
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.utils import to_categorical
 import sys
+import joblib
 
 # Load data, assuming CSV has 'time', 'frequency', 'spectrogram_data', 'label'
 def load_data(csv_file):
@@ -19,7 +23,7 @@ def load_data(csv_file):
                 data=line.split(';')
                 frequency_data.append([float(el) for el in data[0].split(',')[:117]])
                 time_data.append([float(el) for el in data[1].split(',')])
-                spectrogram_data.append(np.array([float(el) for el in data[2].split(',')]).reshape(117,980))
+                spectrogram_data.append(np.array([float(el) for el in data[2].split(',')]).reshape(99,980))
                 labels.append(data[3])
         spectrogram_data=np.array(spectrogram_data)
         time_data=np.array(time_data)
@@ -69,13 +73,29 @@ def train_and_evaluate(csv_file):
     X_train_time, X_test_time, y_train, y_test = train_test_split(time_data, labels, test_size=0.2, random_state=42)
     X_train_frequency, X_test_frequency, y_train, y_test = train_test_split(frequency_data, labels, test_size=0.2, random_state=42)
     # Similarly split time_data, frequency_data
-    
+    # Apply scalers to the data
+    scaler_spectrogram = StandardScaler().fit(X_train_spectrogram.reshape(X_train_spectrogram.shape[0], -1))
+    X_train_spectrogram_scaled = scaler_spectrogram.transform(X_train_spectrogram.reshape(X_train_spectrogram.shape[0], -1)).reshape(X_train_spectrogram.shape)
+
+    scaler_time = StandardScaler().fit(X_train_time.reshape(X_train_time.shape[0], -1))
+    X_train_time_scaled = scaler_time.transform(X_train_time.reshape(X_train_time.shape[0], -1)).reshape(X_train_time.shape)
+
+    scaler_frequency = StandardScaler().fit(X_train_frequency.reshape(X_train_frequency.shape[0], -1))
+    X_train_frequency_scaled = scaler_frequency.transform(X_train_frequency.reshape(X_train_frequency.shape[0], -1)).reshape(X_train_frequency.shape)
+    joblib.dump(scaler_spectrogram, 'scaler_spectrogram.pkl')
+    joblib.dump(scaler_time, 'scaler_time.pkl')
+    joblib.dump(scaler_frequency, 'scaler_frequency.pkl')
+    # Transform the test data using the same scalers
+    X_test_spectrogram_scaled = scaler_spectrogram.transform(X_test_spectrogram.reshape(X_test_spectrogram.shape[0], -1)).reshape(X_test_spectrogram.shape)
+    X_test_time_scaled = scaler_time.transform(X_test_time.reshape(X_test_time.shape[0], -1)).reshape(X_test_time.shape)
+    X_test_frequency_scaled = scaler_frequency.transform(X_test_frequency.reshape(X_test_frequency.shape[0], -1)).reshape(X_test_frequency.shape)
+
     model = create_multi_input_model(spectrogram_data[0].shape,( 1,len(time_data[0])), (1,len(frequency_data[0])))
     # When fitting, provide a list of inputs corresponding to the model's inputs
-    model.fit([X_train_spectrogram, X_train_time, X_train_frequency], y_train, batch_size=64, epochs=10, validation_split=0.2)
+    model.fit([X_train_spectrogram, X_train_time, X_train_frequency], y_train, batch_size=64, epochs=30, validation_split=0.2)
     
     # Save the trained model
-    model.save('my_trained_model.h5')
+    model.save('my_old_trained_model.h5')
     
     # Evaluation would also need to be adjusted to provide multiple inputs
     score = model.evaluate([X_test_spectrogram, X_test_time, X_test_frequency], y_test, verbose=0)
@@ -83,7 +103,7 @@ def train_and_evaluate(csv_file):
     print('Test accuracy:', score[1])
 if __name__=='__main__':
     sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
-    time_data, frequency_data, spectrogram_data, labels=load_data('spectrogram_data.csv')
+    time_data, frequency_data, spectrogram_data, labels=load_data('spectrogram_data_old_version.csv')
     spectrogram_shape, time_data_shape, frequency_data_shape=spectrogram_data.shape,time_data.shape,frequency_data.shape
     create_multi_input_model(spectrogram_shape, time_data_shape, frequency_data_shape)
-    train_and_evaluate('spectrogram_data.csv')
+    train_and_evaluate('spectrogram_data_old_version.csv')
