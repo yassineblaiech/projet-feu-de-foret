@@ -107,3 +107,5 @@ if __name__=='__main__':
     spectrogram_shape, time_data_shape, frequency_data_shape=spectrogram_data.shape,time_data.shape,frequency_data.shape
     create_multi_input_model(spectrogram_shape, time_data_shape, frequency_data_shape)
     train_and_evaluate('spectrogram_data_old_version.csv')
+    
+#warning:  you have to do cd IA and cd spectr_data before launching this code

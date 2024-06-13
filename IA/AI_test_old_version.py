@@ -68,3 +68,7 @@ if __name__ == '__main__':
     test_csv_file = 'spectrogram_data_old_version_test.csv'  # Update this path to your test data CSV
     test_data=load_data(test_csv_file)
     cm,f1 = evaluate_model(model_path, test_csv_file)
+    
+    
+    
+#warning:  you have to do cd IA and cd spectr_data before launching this code

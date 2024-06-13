@@ -12,7 +12,7 @@ from other_features import feature_names
 
 def write_head_csv(spectr_data_rep):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
+    filename = os.path.join(spectr_data_rep, f"large_data.csv")
     with open(filename, mode='w', newline='') as file:
         feature_names_list= feature_names()
         for feature in feature_names_list:
@@ -21,7 +21,7 @@ def write_head_csv(spectr_data_rep):
 
 def write_spectr_fire_csv(spectr_data_rep, features,i):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
+    filename = os.path.join(spectr_data_rep, f"large_data.csv")
     str_features={}
     with open(filename, mode='a') as file:
         # Convert the arrays to comma-separated strings
@@ -41,7 +41,7 @@ def write_spectr_fire_csv(spectr_data_rep, features,i):
     
 def write_spectr_not_fire_csv(spectr_data_rep, features,i):
     sys.path.insert(0, spectr_data_rep)
-    filename = os.path.join(spectr_data_rep, f"mic_test_irl.csv")
+    filename = os.path.join(spectr_data_rep, f"large_data.csv")
     str_features={}
     with open(filename, mode='a') as file:
         # Convert the arrays to comma-separated strings
@@ -108,8 +108,8 @@ def create_database_not_fire(sound_data_not_fire_rep, spectr_data_rep):
 if __name__ == '__main__':
     answer=input('do you want to reload data?')
     if answer=='yes':
-        sound_data_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire/'
-        sound_data_not_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire/'
+        sound_data_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire_fixed/'
+        sound_data_not_fire_repo='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire_fixed/'
         spectr_data_rep='C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data'
         create_database_fire(sound_data_fire_repo,spectr_data_rep)
         create_database_not_fire(sound_data_not_fire_repo, spectr_data_rep)

@@ -33,10 +33,10 @@ def process_audio_files(audio_repo, output_dir):
 if __name__ == '__main__':
     answer = input('Do you want to reload data? ')
     if answer == 'yes':
-        fire_repo = 'C:/Users/yassi/Desktop/projet iot 2'
-        not_fire_repo = 'C:/Users/yassi/Desktop/projet iot 2'
-        output_dir_fire = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire'
-        output_dir_not_fire = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire'
+        fire_repo = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire'
+        not_fire_repo = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire'
+        output_dir_fire = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_fire_fixed'
+        output_dir_not_fire = 'C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/sound_data/mic_data_not_fire_fixed'
         
         # Process and create databases for fire and not-fire data
         process_audio_files(fire_repo, output_dir_fire)

@@ -111,7 +111,7 @@ def train_and_evaluate(csv_file):
     train_labels_list=train_labels['labels']
     test_labels_list=test_labels['labels']
     # Assuming you have defined your model building function
-    model = create_multi_input_model()  # Make sure this function is defined as discussed earlier
+    model = create_multi_input_model()  
 
     # Define a custom callback to print accuracy after each epoch
     class AccuracyHistory(Callback):
@@ -132,7 +132,7 @@ def train_and_evaluate(csv_file):
     test_loss, test_accuracy = model.evaluate(test_data_list, test_labels_list)
 
     # Save the trained model
-    model.save('my_trained_model_3.h5')
+    model.save('my_trained_model_4.h5')
     print('Test accuracy:', test_accuracy)
 
     # Return the accuracy history
@@ -140,8 +140,8 @@ def train_and_evaluate(csv_file):
 
 if __name__=='__main__':
     
-    sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/mic_test.csv")
-    train_and_evaluate('spectrogram_data_test.csv')
+    sys.path.insert(0, "C:/Users/yassi/Desktop/projet iot 2/projet-feu-de-foret/IA/spectr_data")
+    train_and_evaluate('large_data.csv')
     
     
-        
+#warning:  you have to do cd IA and cd spectr_data before launching this code

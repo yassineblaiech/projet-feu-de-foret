@@ -144,4 +144,4 @@ if __name__=='__main__':
     train_and_evaluate('mic_test.csv')
     
     
-        
+#warning:  you have to do cd IA and cd spectr_data before launching this code

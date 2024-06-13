@@ -15,7 +15,6 @@ def evaluate_model(model_path, csv_file):
     
     # Load the test data
     data_dict = load_data(csv_file)
-    # Assuming your data_dict structure, extract X_test and y_test
     X_test = [data_dict[key] for key in data_dict.keys() if key != 'labels']
     # Note: Depending on how load_data structures X_test, you might need to adjust this
     y_test = data_dict['labels']
@@ -59,7 +58,11 @@ def evaluate_model(model_path, csv_file):
 
 # Example usage:
 if __name__ == '__main__':
-    model_path = 'my_trained_model_2.h5'  # Update this path to where you saved your model
-    test_csv_file = 'mic_test_irl.csv'  # Update this path to your test data CSV
+    model_path = 'my_trained_model_2.h5'  
+    test_csv_file = 'mic_test_irl.csv'  
     test_data=load_data(test_csv_file)
     cm,f1 = evaluate_model(model_path, test_csv_file)
+    
+    
+    
+#warning:  you have to do cd IA and cd spectr_data before launching this code
